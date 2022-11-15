@@ -12,7 +12,23 @@ import android.view.View
 class VerticalSlider  : View {
 
     private var touchY = 0F
-    var percent = 0F
+    private var _percent = 0F
+    var percent : Float
+        get() {
+            return _percent
+        }
+        set(value) {
+            _percent = value
+            touchY = height * (1 - _percent/100f)
+            invalidate()
+        }
+
+    private var onValueChange : ((Float)->Unit)? = null
+
+    fun setOnValueChangeListener (callback :(Float)->Unit ) {
+        onValueChange = callback
+    }
+
 
     constructor(context: Context?) : super(context)
     constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
@@ -44,8 +60,7 @@ class VerticalSlider  : View {
         paint.color = Color.WHITE
         paint.textSize = 60.0F
 
-        val percent = ((height - touchY)/height)*100f
-        canvas?.drawText("${percent.toInt()}%",0f, height.toFloat() - 20f, paint)
+        canvas?.drawText("${_percent.toInt()}%",0f, height.toFloat() - 20f, paint)
 
     }
 
@@ -63,7 +78,8 @@ class VerticalSlider  : View {
                     if (v >= height) v = height.toFloat()
                     touchY = v
 
-                    percent = ((height - touchY)/height)*100f
+                    _percent = ((height - touchY)/height)*100f
+                    onValueChange?.invoke(_percent)
                     invalidate()
 
                 }
